@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang = 'en'>
+    <head>
+        <meta charset = "UTF-8">
+        <meta name = "viewport" content = "width=device-width,initial-scale=1.0">
+        <link rel="stylesheet" href="styles.css">
+        <title>Document</title>
+    </head>
+    <body>
+        <div class="container">
+            <h1>URL Shortner</h1>
+            <form id="shorten-form">
+                <div>
+                    <label for = "url">Enter URL:</label>
+                    <input type="url" name="url" id="url" required>
+                </div>
+                <div>
+                    <label for = "shorturl">Short URL:</label>
+                    <input type="text" name="shorturl" id="shorturl" required>
+                </div>
+                <button type="submit">Submit</button>
+            </form>
+            <h2>Short URL</h2>
+            <ul id="shortened-urls"></ul>
+        </div>
+        <script>
+            // for fetching links from backend
+            const fetchShortenedURL = async() => {
+                const response = await fetch("/links");
+                const links = await response.json(); // convert response to json
+
+                const list = document.getElementById("shortened-urls"); //get ID so we can modify it dynamically
+                list.innerHTML = ""; // use to empty existing data
+
+                for(const [shorturl,url] of Object.entries(links)) { //Object.entries(links) converts an object into an array of key-value pairs.
+                   const li = document.createElement('li'); //created element li so we store it in <ul> 
+                    const truncatedURL = url.length>=30 ? `${url.slice(0,30)}...` :url ;
+                   li.innerHTML = `<a href = "/${shorturl}" target="_blank"> ${window.location.origin}/${shorturl}</a> - ${truncatedURL}` //for printing data on webpage //target="_blank" → Opens the link in a new tab //${window.location.origin} it display url of our website(localhost:3000)
+                   list.appendChild(li) // for appending data one by one
+                }
+            }
+
+
+            document.getElementById('shorten-form').addEventListener('submit' , async(event) => { // we use event to control the form submission ,prevent page reload , and access form data efficiently
+                event.preventDefault(); // prevent to auto load page
+                const formdata = new FormData(event.target) //constructor  // by using event.target  "Get all the input values from the form WHICH was submitted."
+                const url  = formdata.get('url'); // get method returns the first value associated with a given key(name of the input field) from within a formdata object  
+                const short  = formdata.get('shorturl'); 
+                console.log(url,short);
+
+                //created api so backend do its work when usr click submit
+                try {
+                 const response = await fetch("/shorten" , {
+                    method : "POST",
+                    headers : {"Content-Type" : "application/json"}, // tells the server that the request body contains JSON data.
+                    body: JSON.stringify ({url,short}) //we wrote JSON.stringify because JavaScript objects cannot be sent directly in an HTTP request body.
+                 })
+                 if(response.ok) {
+                    fetchShortenedURL();
+                    alert("Form Submitted Successfully");
+                    event.target.reset();
+                 }
+                 else{
+                    errorMessage = await response.text();
+                    alert(errorMessage)
+                 }
+                } catch (error) {
+                    console.log(error);
+                }
+            })
+            fetchShortenedURL();
+        </script>
+    </body>
+</html>

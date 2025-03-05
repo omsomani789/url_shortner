@@ -1,0 +1,14 @@
+{
+  "name": "url_shortner",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "backend.js",
+  
+  "scripts": {
+    "dev" : "node --watch backend.js",
+    "start" :"node backend.js"
+  }
+}
